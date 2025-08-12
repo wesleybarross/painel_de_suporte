@@ -1,5 +1,5 @@
 @echo off
-:: Painel de Suporte Técnico - Melhorado com verificação de admin e validação de entradas
+:: Painel de Suporte Tecnico - Melhorado com verificação de admin e validação de entradas
 title Painel de Suporte Tecnico
 mode con: cols=95 lines=40
 
@@ -28,67 +28,43 @@ echo 7 = Branco      F = Branco brilhante
 echo ------------------------------------------------
 echo FORMATO: FundoTexto  (Exemplo: 0B = fundo preto, texto aqua claro)
 echo.
-set /p cor="Digite o codigo da cor (ou pressione ENTER para usar padrao 07): "
+set /p cor="Digite o codigo da cor (ou pressione ENTER para usar padrao): "
 
-:: Se vazio usa padrao 07
 if "%cor%"=="" (
     color 07
-    goto MENU
-)
-
-:: Se só digitou 1 caractere, adiciona '0' na frente (fundo)
-if "%cor:~1,1%"=="" set "cor=0%cor%"
-
-:: Converte para maiúsculas
-setlocal enabledelayedexpansion
-set "c1=!cor:~0,1!"
-set "c2=!cor:~1,1!"
-
-for %%L in (a b c d e f) do (
-    set "c1=!c1:%%L=%%L!"
-    set "c2=!c2:%%L=%%L!"
-)
-set "c1=!c1:a=A!"
-set "c1=!c1:b=B!"
-set "c1=!c1:c=C!"
-set "c1=!c1:d=D!"
-set "c1=!c1:e=E!"
-set "c1=!c1:f=F!"
-set "c2=!c2:a=A!"
-set "c2=!c2:b=B!"
-set "c2=!c2:c=C!"
-set "c2=!c2:d=D!"
-set "c2=!c2:e=E!"
-set "c2=!c2:f=F!"
-
-set "cor=!c1!!c2!"
-
-set "valid=0123456789ABCDEF"
-if "!valid:%c1%=!"=="%valid%" (
-    echo Codigo de cor invalido! Primeiro caractere nao e hexadecimal.
-    pause
+) else (
+    setlocal enabledelayedexpansion
+    set "valid=0123456789ABCDEFabcdef"
+    set "input=%cor%"
+    set "c1=!input:~0,1!"
+    set "c2=!input:~1,1!"
+    for %%A in (!c1!) do set "c1=%%~A"
+    for %%B in (!c2!) do set "c2=%%~B"
+    if "!valid:%c1%=!"=="%valid%" (
+        echo Codigo de cor invalido!
+        pause
+        endlocal
+        goto COR
+    )
+    if "!valid:%c2%=!"=="%valid%" (
+        echo Codigo de cor invalido!
+        pause
+        endlocal
+        goto COR
+    )
     endlocal
-    goto COR
+    color %cor%
 )
-if "!valid:%c2%=!"=="%valid%" (
-    echo Codigo de cor invalido! Segundo caractere nao e hexadecimal.
-    pause
-    endlocal
-    goto COR
-)
-endlocal
-
-color %cor%
 
 goto MENU
 
 :MENU
 cls
-echo ================================================================================
+echo ================================================================================ 
 echo                    CRIADO POR WESLEY BARROS
 echo                   FERRAMENTA PARA USO DO TECNICO
 echo                UTILIZE A FERRAMENTA COMO ADMINISTRADOR
-echo ================================================================================
+echo ================================================================================ 
 echo.
 echo [1]  Limpeza de arquivos temporarios
 echo [2]  Executar limpeza de disco (cleanmgr)
@@ -101,7 +77,7 @@ echo [8]  Limpeza de logs de eventos
 echo [9]  Informacoes do sistema (msinfo32)
 echo [10] Gerenciador de dispositivos
 echo [11] Ver adaptadores de rede
-echo [12] Ver programas instalados
+echo [12] Ver e atualizar programas instalados (via winget)
 echo [13] Ver processos em execucao
 echo [14] Ver status dos principais servicos
 echo [15] Executar CHKDSK no disco C:
@@ -137,7 +113,7 @@ endlocal
 if "%opcao%"=="99" goto COR
 if "%opcao%"=="0" exit
 
-:: Verifica intervalo válido
+rem Verifica intervalo válido
 if %opcao% lss 1 if not "%opcao%"=="0" goto INVALIDA
 if %opcao% gtr 27 if not "%opcao%"=="99" goto INVALIDA
 
@@ -148,12 +124,10 @@ echo Opcao invalida! Digite um numero valido.
 pause
 goto MENU
 
-:: Opções
-
 :EXP_1
 cls
 echo [1] Limpeza de arquivos temporarios
-echo Apaga os arquivos temporarios do sistema, que ficam em %temp% — ajudam a liberar espaco e evitar lentidao.
+echo Apaga os arquivos temporarios do sistema, que ficam em %%temp%% — ajudam a liberar espaco e evitar lentidao.
 echo.
 echo [1] Executar
 echo [0] Voltar
@@ -315,17 +289,33 @@ goto MENU
 
 :EXP_12
 cls
-echo [12] Ver programas instalados
-echo Lista os programas instalados no Windows usando wmic product get name,version.
+echo [12] Ver e atualizar programas instalados via winget
+echo Este comando lista os programas com atualizacoes disponiveis usando winget.
 echo.
-echo [1] Executar
+echo [1] Ver atualizacoes disponiveis
+echo [2] Atualizar todos os programas com atualizacoes
 echo [0] Voltar
 set /p escolha="Escolha uma opcao: "
+
 if "%escolha%"=="1" (
-    wmic product get name,version
+    echo Verificando atualizacoes disponiveis via winget...
+    winget upgrade
+    echo.
     pause
+    goto EXP_12
 )
-goto MENU
+
+if "%escolha%"=="2" (
+    echo Iniciando atualizacao de todos os programas...
+    winget upgrade --accept-source-agreements --accept-package-agreements --silent
+    echo.
+    pause
+    goto MENU
+)
+
+if "%escolha%"=="0" goto MENU
+
+goto EXP_12
 
 :EXP_13
 cls
@@ -455,7 +445,6 @@ if "%escolha%"=="1" (
     set /a sizeGB=%size:~0,-9%
     set /a freeGB=%free:~0,-9%
     set /a usedGB=%sizeGB%-%freeGB%
-
     echo.
     echo Unidade C:
     echo Capacidade total: %sizeGB% GB
@@ -467,41 +456,17 @@ goto MENU
 
 :EXP_22
 cls
-echo [22] Verificar status do antivirus (Windows Defender)
-echo Tenta iniciar o servico do Windows Defender e mostra o status atual.
+echo [22] Verificar status do antivirus
+echo Mostra o status do servico do Windows Defender (antivirus nativo do Windows).
 echo.
-echo [1] Tentar iniciar o servico
-echo [2] Ver status atual
+echo [1] Executar
 echo [0] Voltar
 set /p escolha="Escolha uma opcao: "
-
 if "%escolha%"=="1" (
-    echo Tentando iniciar o servico Windows Defender...
-    net start windefend >nul 2>&1
-    if errorlevel 1 (
-        echo Falha ao iniciar o servico. Pode estar desativado ou com outro antivírus instalado.
-    ) else (
-        echo Servico iniciado com sucesso.
-    )
-    echo.
-    echo Status atual do servico:
     sc query windefend
     pause
-    goto MENU
 )
-
-if "%escolha%"=="2" (
-    echo Status atual do servico Windows Defender:
-    sc query windefend
-    pause
-    goto MENU
-)
-
-if "%escolha%"=="0" goto MENU
-
-echo Opcao invalida.
-pause
-goto EXP_22
+goto MENU
 
 :EXP_23
 cls
@@ -540,8 +505,50 @@ echo [1] Executar
 echo [0] Voltar
 set /p escolha="Escolha uma opcao: "
 if "%escolha%"=="1" (
-    wmic path Win32_USBHub get DeviceID,Description > "%TEMP%\usb_devices.txt" 2>nul
-    type "%TEMP%\usb_devices.txt"
+    wmic path Win32_USBHub get DeviceID,Description
     pause
+)
+goto MENU
+
+:EXP_26
+cls
+echo [26] Ver uso de memoria e CPU
+echo Lista os processos com informacoes detalhadas, incluindo uso de CPU e memoria.
+echo.
+echo [1] Executar
+echo [0] Voltar
+set /p escolha="Escolha uma opcao: "
+if "%escolha%"=="1" (
+    tasklist /v
+    pause
+)
+goto MENU
+
+:EXP_27
+cls
+echo [27] Baixar arquivo via HTTPS (exemplo com PowerShell)
+echo Permite baixar um arquivo da internet via HTTPS usando PowerShell.
+echo.
+echo [1] Executar
+echo [0] Voltar
+set /p escolha="Escolha uma opcao: "
+if "%escolha%"=="1" (
+    set /p url="Digite a URL do arquivo para download: "
+    if "%url%"=="" (
+        echo URL invalida.
+        pause
+        goto MENU
+    )
+    set "outfile=%TEMP%\download_%RANDOM%.bin"
+    echo Baixando arquivo...
+    powershell -Command "Invoke-WebRequest -Uri '%url%' -OutFile '%outfile%'"
+    if errorlevel 1 (
+        echo Falha no download.
+        pause
+    ) else (
+        echo Download concluido com sucesso.
+        echo Arquivo salvo em: %outfile%
+        pause
+    )
 )
 goto MENU
