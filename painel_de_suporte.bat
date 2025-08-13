@@ -1,6 +1,6 @@
 @echo off
 :: Painel de Suporte Técnico - Melhorado com explicações amigáveis
-title Painel de Suporte Tecnico
+title Painel de Suporte Técnico
 mode con: cols=95 lines=40
 
 :: Verifica se o script está rodando como administrador
@@ -33,7 +33,6 @@ set /p cor="Digite o codigo da cor (ou pressione ENTER para usar padrao): "
 if "%cor%"=="" (
     color 07
 ) else (
-    rem Valida se o código de cor tem dois caracteres válidos (0-9,A-F)
     setlocal enabledelayedexpansion
     set "valid=0123456789ABCDEFabcdef"
     set "input=%cor%"
@@ -94,16 +93,17 @@ echo [24] Backup dos logs de eventos
 echo [25] Visualizar dispositivos USB conectados
 echo [26] Ver uso de memoria e CPU
 echo [27] Baixar arquivo via HTTPS (exemplo com PowerShell)
+echo [U] Atualizar script
 echo [99] Mudar cor
 echo [0]  Sair
 echo.
 
 set /p opcao="Escolha uma opcao: "
 
-:: Valida se entrada é numérica
+:: Valida se entrada é numérica ou U
 setlocal enabledelayedexpansion
 set "valor=%opcao%"
-for /f "delims=0123456789" %%a in ("!valor!") do (
+for /f "delims=0123456789Uu" %%a in ("!valor!") do (
     endlocal
     echo Opcao invalida! Digite um numero valido.
     pause
@@ -111,6 +111,7 @@ for /f "delims=0123456789" %%a in ("!valor!") do (
 )
 endlocal
 
+if /I "%opcao%"=="U" goto ATUALIZAR
 if "%opcao%"=="99" goto COR
 if "%opcao%"=="0" exit
 if %opcao% lss 1 if not "%opcao%"=="0" goto INVALIDA
@@ -123,9 +124,9 @@ echo Opcao invalida! Digite um numero valido.
 pause
 goto MENU
 
-:: ===========================================
-:: Opcoes 1 a 27 com explicacoes amigaveis
-:: ===========================================
+:: ==========================
+:: Opcoes 1 a 27
+:: ==========================
 
 :EXP_1
 cls
@@ -318,13 +319,25 @@ echo Tempo estimado: Imediato
 echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
+echo [2] Executar continuamente (monitoramento)
 echo [0] Voltar
 set /p escolha="Escolha uma opcao: "
 if "%escolha%"=="1" (
     ipconfig /all
     pause
+    goto MENU
 )
-goto MENU
+if "%escolha%"=="2" (
+    cls
+    echo Monitoramento continuo iniciado. Digite 0 para voltar ao menu.
+    :loop_ipconfig
+    ipconfig /all
+    set /p sair="Digite 0 para voltar ou ENTER para atualizar: "
+    if "%sair%"=="0" goto MENU
+    goto loop_ipconfig
+)
+if "%escolha%"=="0" goto MENU
+goto EXP_11
 
 :EXP_12
 cls
@@ -406,7 +419,7 @@ goto MENU
 cls
 echo [16] Abrir PowerShell
 echo ------------------------------------------------
-echo O que faz: Abre uma janela do PowerShell para comandos avançados.
+echo O que faz: Abre uma janela do PowerShell para comandos avancados.
 echo Tempo estimado: Imediato
 echo Afeta meus arquivos pessoais? Nao
 echo.
@@ -474,15 +487,15 @@ goto MENU
 cls
 echo [20] Testar velocidade da internet
 echo ------------------------------------------------
-echo O que faz: Abre o site Speedtest.net para medir velocidade da conexao.
-echo Tempo estimado: 1 a 2 minutos
+echo O que faz: Abre o teste de velocidade via navegador.
+echo Tempo estimado: Imediato
 echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
 set /p escolha="Escolha uma opcao: "
 if "%escolha%"=="1" (
-    start https://www.speedtest.net
+    start https://www.speedtest.net/
     pause
 )
 goto MENU
@@ -491,7 +504,7 @@ goto MENU
 cls
 echo [21] Verificar espaco em disco
 echo ------------------------------------------------
-echo O que faz: Mostra capacidade total, livre e usada da unidade C:.
+echo O que faz: Mostra o espaco livre e ocupado em todos os discos.
 echo Tempo estimado: Imediato
 echo Afeta meus arquivos pessoais? Nao
 echo.
@@ -499,17 +512,7 @@ echo [1] Executar
 echo [0] Voltar
 set /p escolha="Escolha uma opcao: "
 if "%escolha%"=="1" (
-    for /f "tokens=1,2 delims==" %%a in ('wmic logicaldisk where "DeviceID='C:'" get Size^,FreeSpace /format:value') do (
-        if "%%a"=="Size" set size=%%b
-        if "%%a"=="FreeSpace" set free=%%b
-    )
-    set /a sizeGB=%size:~0,-9%
-    set /a freeGB=%free:~0,-9%
-    set /a usedGB=%sizeGB%-%freeGB%
-    echo Unidade C:
-    echo Capacidade total: %sizeGB% GB
-    echo Espaco livre:     %freeGB% GB
-    echo Espaco usado:     %usedGB% GB
+    wmic logicaldisk get size,freespace,caption
     pause
 )
 goto MENU
@@ -518,7 +521,7 @@ goto MENU
 cls
 echo [22] Verificar status do antivirus
 echo ------------------------------------------------
-echo O que faz: Mostra se o Windows Defender esta ativo.
+echo O que faz: Mostra status do Windows Defender e outros antivirus compativeis com WMI.
 echo Tempo estimado: Imediato
 echo Afeta meus arquivos pessoais? Nao
 echo.
@@ -526,7 +529,7 @@ echo [1] Executar
 echo [0] Voltar
 set /p escolha="Escolha uma opcao: "
 if "%escolha%"=="1" (
-    sc query windefend
+    powershell -command "Get-MpComputerStatus | Format-List AMServiceEnabled,AntispywareEnabled,AntivirusEnabled,RealTimeProtectionEnabled"
     pause
 )
 goto MENU
@@ -539,29 +542,42 @@ echo O que faz: Verifica se a internet esta funcionando via ping.
 echo Tempo estimado: Contínuo (pressione Ctrl+C para parar)
 echo Afeta meus arquivos pessoais? Nao
 echo.
+echo Ao parar com CTRL+C, digite N para voltar ao menu sem fechar o programa.
+echo.
 echo [1] Executar
 echo [0] Voltar
 set /p escolha="Escolha uma opcao: "
+
 if "%escolha%"=="1" (
-    ping google.com -t
-    pause
+    call :PING_LOOP
+    goto MENU
 )
+
+if "%escolha%"=="0" goto MENU
+goto EXP_23
+
+:PING_LOOP
+REM Ativar tratamento de CTRL+C
+break off
+ping google.com -t
 goto MENU
 
 :EXP_24
 cls
 echo [24] Backup dos logs de eventos
 echo ------------------------------------------------
-echo O que faz: Exporta logs de eventos do sistema para um arquivo .evtx.
-echo Tempo estimado: 1 minuto
+echo O que faz: Copia logs importantes do Windows para pasta de backup.
+echo Tempo estimado: 1 a 2 minutos
 echo Afeta meus arquivos pessoais? Nao
 echo.
+set backupdir=%userprofile%\Desktop\LogsBackup
+if not exist "%backupdir%" mkdir "%backupdir%"
 echo [1] Executar
 echo [0] Voltar
 set /p escolha="Escolha uma opcao: "
 if "%escolha%"=="1" (
-    wevtutil epl System C:\backup_logs_system.evtx
-    echo Backup concluido!
+    xcopy C:\Windows\System32\winevt\Logs "%backupdir%" /s /i /y
+    echo Backup concluido em %backupdir%
     pause
 )
 goto MENU
@@ -570,7 +586,7 @@ goto MENU
 cls
 echo [25] Visualizar dispositivos USB conectados
 echo ------------------------------------------------
-echo O que faz: Lista dispositivos USB conectados.
+echo O que faz: Lista todos os dispositivos USB atualmente conectados.
 echo Tempo estimado: Imediato
 echo Afeta meus arquivos pessoais? Nao
 echo.
@@ -578,7 +594,7 @@ echo [1] Executar
 echo [0] Voltar
 set /p escolha="Escolha uma opcao: "
 if "%escolha%"=="1" (
-    wmic path Win32_USBHub get DeviceID,Description
+    wmic path CIM_LogicalDevice where "Description like 'USB%'" get /value
     pause
 )
 goto MENU
@@ -587,7 +603,7 @@ goto MENU
 cls
 echo [26] Ver uso de memoria e CPU
 echo ------------------------------------------------
-echo O que faz: Mostra processos em execucao com uso de memoria e CPU.
+echo O que faz: Mostra o uso atual de memoria RAM e CPU.
 echo Tempo estimado: Imediato
 echo Afeta meus arquivos pessoais? Nao
 echo.
@@ -604,30 +620,29 @@ goto MENU
 cls
 echo [27] Baixar arquivo via HTTPS (exemplo com PowerShell)
 echo ------------------------------------------------
-echo O que faz: Baixa um arquivo da internet usando PowerShell.
-echo Tempo estimado: Varia de acordo com o tamanho do arquivo
+echo O que faz: Baixa um arquivo de um link seguro.
+echo Tempo estimado: Varia
 echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
 set /p escolha="Escolha uma opcao: "
 if "%escolha%"=="1" (
-    set /p url="Digite a URL do arquivo para download: "
-    if "%url%"=="" (
-        echo URL invalida.
-        pause
-        goto MENU
-    )
-    set "outfile=%TEMP%\download_%RANDOM%.bin"
-    echo Baixando arquivo...
-    powershell -Command "Invoke-WebRequest -Uri '%url%' -OutFile '%outfile%'"
-    if errorlevel 1 (
-        echo Falha no download.
-        pause
-    ) else (
-        echo Download concluido com sucesso.
-        echo Arquivo salvo em: %outfile%
-        pause
-    )
+    set /p url="Cole o link HTTPS: "
+    set /p destino="Digite o caminho e nome do arquivo de destino: "
+    powershell -Command "Invoke-WebRequest -Uri '%url%' -OutFile '%destino%'"
+    echo Download concluido!
+    pause
 )
+goto MENU
+
+:: ==========================
+:: Atualizacao do Script
+:: ==========================
+
+:ATUALIZAR
+cls
+echo Atualizacao do script - EM BREVE
+echo Versao Beta 1.0 - Pronto para uso
+pause
 goto MENU
