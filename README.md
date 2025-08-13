@@ -31,17 +31,6 @@ Tudo num só script, fácil de usar, direto ao ponto e com várias ferramentas e
 
 ---
 
-## 🤝 Quer contribuir?
-
-Contribuições, sugestões e melhorias são super bem-vindas!  
-
-1. Faça um fork  
-2. Crie sua branch (`git checkout -b feature/nova-funcionalidade`)  
-3. Faça commits claros (`git commit -m "Descrição da mudança"`)  
-4. Envie o pull request e vamos juntos deixar essa ferramenta ainda melhor! 🚀
-
----
-
 ## 📄 Licença
 
 MIT License — Use, modifique e compartilhe à vontade!
