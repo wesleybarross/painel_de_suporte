@@ -1,5 +1,5 @@
 @echo off
-:: Painel de Suporte Tecnico - Melhorado com verificação de admin e validação de entradas
+:: Painel de Suporte Técnico - Melhorado com explicações amigáveis
 title Painel de Suporte Tecnico
 mode con: cols=95 lines=40
 
@@ -33,6 +33,7 @@ set /p cor="Digite o codigo da cor (ou pressione ENTER para usar padrao): "
 if "%cor%"=="" (
     color 07
 ) else (
+    rem Valida se o código de cor tem dois caracteres válidos (0-9,A-F)
     setlocal enabledelayedexpansion
     set "valid=0123456789ABCDEFabcdef"
     set "input=%cor%"
@@ -60,11 +61,11 @@ goto MENU
 
 :MENU
 cls
-echo ================================================================================ 
+echo ===================================================================
 echo                    CRIADO POR WESLEY BARROS
 echo                   FERRAMENTA PARA USO DO TECNICO
 echo                UTILIZE A FERRAMENTA COMO ADMINISTRADOR
-echo ================================================================================ 
+echo ===================================================================
 echo.
 echo [1]  Limpeza de arquivos temporarios
 echo [2]  Executar limpeza de disco (cleanmgr)
@@ -77,7 +78,7 @@ echo [8]  Limpeza de logs de eventos
 echo [9]  Informacoes do sistema (msinfo32)
 echo [10] Gerenciador de dispositivos
 echo [11] Ver adaptadores de rede
-echo [12] Ver e atualizar programas instalados (via winget)
+echo [12] Ver e atualizar programas instalados via winget
 echo [13] Ver processos em execucao
 echo [14] Ver status dos principais servicos
 echo [15] Executar CHKDSK no disco C:
@@ -112,8 +113,6 @@ endlocal
 
 if "%opcao%"=="99" goto COR
 if "%opcao%"=="0" exit
-
-rem Verifica intervalo válido
 if %opcao% lss 1 if not "%opcao%"=="0" goto INVALIDA
 if %opcao% gtr 27 if not "%opcao%"=="99" goto INVALIDA
 
@@ -124,26 +123,35 @@ echo Opcao invalida! Digite um numero valido.
 pause
 goto MENU
 
+:: ===========================================
+:: Opcoes 1 a 27 com explicacoes amigaveis
+:: ===========================================
+
 :EXP_1
 cls
 echo [1] Limpeza de arquivos temporarios
-echo Apaga os arquivos temporarios do sistema, que ficam em %%temp%% — ajudam a liberar espaco e evitar lentidao.
+echo ------------------------------------------------
+echo O que faz: Apaga arquivos temporarios do Windows que ocupam espaco inutilmente.
+echo Tempo estimado: 1 a 2 minutos
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
 set /p escolha="Escolha uma opcao: "
 if "%escolha%"=="1" (
     del /s /q %temp%\*.* 2>nul
-    cls
-    echo Limpeza concluida.
+    echo Limpeza concluida!
     pause
 )
 goto MENU
 
 :EXP_2
 cls
-echo [2] Executar limpeza de disco (cleanmgr)
-echo Abre a ferramenta do Windows "Limpeza de Disco" para remover arquivos desnecessarios e liberar espaco.
+echo [2] Limpeza de disco (cleanmgr)
+echo ------------------------------------------------
+echo O que faz: Abre a ferramenta do Windows para remover arquivos desnecessarios e liberar espaco.
+echo Tempo estimado: 2 a 5 minutos
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
@@ -157,13 +165,19 @@ goto MENU
 :EXP_3
 cls
 echo [3] Verificacao de arquivos do sistema (SFC)
-echo Executa o comando sfc /scannow que verifica e repara arquivos protegidos do Windows corrompidos.
+echo ------------------------------------------------
+echo O que faz: Verifica arquivos protegidos do Windows e tenta reparar corrupcoes automaticamente.
+echo Tempo estimado: 10 a 30 minutos
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
 set /p escolha="Escolha uma opcao: "
 if "%escolha%"=="1" (
+    echo Iniciando verificacao...
     sfc /scannow
+    echo Verificacao concluida.
+    echo Verifique o log em C:\Windows\Logs\CBS\CBS.log se houver problemas.
     pause
 )
 goto MENU
@@ -171,7 +185,10 @@ goto MENU
 :EXP_4
 cls
 echo [4] Reparo da imagem do Windows (DISM)
-echo Executa DISM /Online /Cleanup-Image /RestoreHealth para reparar a imagem do sistema Windows, corrigindo arquivos corrompidos.
+echo ------------------------------------------------
+echo O que faz: Repara arquivos de sistema corrompidos usando a ferramenta DISM.
+echo Tempo estimado: 10 a 30 minutos
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
@@ -185,7 +202,10 @@ goto MENU
 :EXP_5
 cls
 echo [5] Reset do Windows Update
-echo Para os servicos do Windows Update (wuauserv e bits), apaga a pasta SoftwareDistribution e reinicia os servicos, para resolver problemas com atualizacoes.
+echo ------------------------------------------------
+echo O que faz: Reinicia os servicos do Windows Update e limpa a pasta SoftwareDistribution.
+echo Tempo estimado: 2 a 5 minutos
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
@@ -203,7 +223,10 @@ goto MENU
 :EXP_6
 cls
 echo [6] Reset de configuracoes de rede
-echo Reseta configuracoes de rede como o Winsock e o protocolo IP e limpa o cache DNS — util para problemas de conexao.
+echo ------------------------------------------------
+echo O que faz: Reseta Winsock, IP e DNS para resolver problemas de conexao.
+echo Tempo estimado: 1 a 3 minutos
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
@@ -219,7 +242,10 @@ goto MENU
 :EXP_7
 cls
 echo [7] Atualizacao das politicas de grupo (GPO)
-echo Forca a atualizacao das politicas de grupo do Windows (gpupdate /force), util em ambientes corporativos.
+echo ------------------------------------------------
+echo O que faz: Forca atualizacao das politicas de grupo do Windows.
+echo Tempo estimado: 1 a 2 minutos
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
@@ -233,7 +259,10 @@ goto MENU
 :EXP_8
 cls
 echo [8] Limpeza de logs de eventos
-echo Limpa os logs dos eventos do sistema, como os logs de aplicacao e sistema.
+echo ------------------------------------------------
+echo O que faz: Apaga registros antigos de erros e avisos do Windows.
+echo Tempo estimado: 1 minuto
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
@@ -241,6 +270,7 @@ set /p escolha="Escolha uma opcao: "
 if "%escolha%"=="1" (
     wevtutil cl Application
     wevtutil cl System
+    echo Limpeza concluida!
     pause
 )
 goto MENU
@@ -248,7 +278,10 @@ goto MENU
 :EXP_9
 cls
 echo [9] Informacoes do sistema (msinfo32)
-echo Abre o utilitario msinfo32 com informacoes detalhadas do hardware e software do computador.
+echo ------------------------------------------------
+echo O que faz: Abre utilitario do Windows com informacoes detalhadas de hardware e software.
+echo Tempo estimado: Imediato
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
@@ -262,7 +295,10 @@ goto MENU
 :EXP_10
 cls
 echo [10] Gerenciador de dispositivos
-echo Abre o Gerenciador de Dispositivos para gerenciar hardware e drivers.
+echo ------------------------------------------------
+echo O que faz: Abre o Gerenciador de Dispositivos para gerenciar hardware e drivers.
+echo Tempo estimado: Imediato
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
@@ -276,7 +312,10 @@ goto MENU
 :EXP_11
 cls
 echo [11] Ver adaptadores de rede
-echo Mostra as informacoes completas dos adaptadores de rede usando ipconfig /all.
+echo ------------------------------------------------
+echo O que faz: Mostra detalhes dos adaptadores de rede com ipconfig /all.
+echo Tempo estimado: Imediato
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
@@ -290,37 +329,35 @@ goto MENU
 :EXP_12
 cls
 echo [12] Ver e atualizar programas instalados via winget
-echo Este comando lista os programas com atualizacoes disponiveis usando winget.
+echo ------------------------------------------------
+echo O que faz: Lista programas que podem ser atualizados e permite atualizar.
+echo Tempo estimado: Varia dependendo do numero de programas
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Ver atualizacoes disponiveis
-echo [2] Atualizar todos os programas com atualizacoes
+echo [2] Atualizar todos os programas
 echo [0] Voltar
 set /p escolha="Escolha uma opcao: "
-
 if "%escolha%"=="1" (
-    echo Verificando atualizacoes disponiveis via winget...
     winget upgrade
-    echo.
     pause
     goto EXP_12
 )
-
 if "%escolha%"=="2" (
-    echo Iniciando atualizacao de todos os programas...
     winget upgrade --accept-source-agreements --accept-package-agreements --silent
-    echo.
     pause
     goto MENU
 )
-
 if "%escolha%"=="0" goto MENU
-
 goto EXP_12
 
 :EXP_13
 cls
 echo [13] Ver processos em execucao
-echo Lista todos os processos rodando atualmente com o comando tasklist.
+echo ------------------------------------------------
+echo O que faz: Lista todos os processos que estao rodando no momento.
+echo Tempo estimado: Imediato
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
@@ -334,7 +371,10 @@ goto MENU
 :EXP_14
 cls
 echo [14] Ver status dos principais servicos
-echo Mostra os servicos Windows que estao iniciados (em execucao) com o comando net start.
+echo ------------------------------------------------
+echo O que faz: Mostra os servicos do Windows que estao em execucao.
+echo Tempo estimado: Imediato
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
@@ -348,7 +388,10 @@ goto MENU
 :EXP_15
 cls
 echo [15] Executar CHKDSK no disco C:
-echo Roda o comando chkdsk C: /f /r para verificar e reparar erros no disco C:.
+echo ------------------------------------------------
+echo O que faz: Verifica o disco C: e corrige erros encontrados.
+echo Tempo estimado: Depende do tamanho do disco, pode demorar varios minutos.
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
@@ -362,7 +405,10 @@ goto MENU
 :EXP_16
 cls
 echo [16] Abrir PowerShell
-echo Abre uma janela do PowerShell.
+echo ------------------------------------------------
+echo O que faz: Abre uma janela do PowerShell para comandos avançados.
+echo Tempo estimado: Imediato
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
@@ -376,7 +422,10 @@ goto MENU
 :EXP_17
 cls
 echo [17] Verificar ipconfig
-echo Mostra as configuracoes basicas de IP da maquina com o comando ipconfig.
+echo ------------------------------------------------
+echo O que faz: Mostra as configuracoes de IP do computador.
+echo Tempo estimado: Imediato
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
@@ -390,7 +439,10 @@ goto MENU
 :EXP_18
 cls
 echo [18] Instalar impressora / Abrir link de driver
-echo Abre a janela de impressoras do Windows (painel de controle) para instalacao ou configuracao.
+echo ------------------------------------------------
+echo O que faz: Abre o painel de impressoras do Windows.
+echo Tempo estimado: Imediato
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
@@ -404,7 +456,10 @@ goto MENU
 :EXP_19
 cls
 echo [19] Abertura de chamado
-echo Abre um link na web para o sistema de chamados (helpdesk) da empresa.
+echo ------------------------------------------------
+echo O que faz: Abre o sistema de chamados da empresa no navegador.
+echo Tempo estimado: Imediato
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
@@ -418,7 +473,10 @@ goto MENU
 :EXP_20
 cls
 echo [20] Testar velocidade da internet
-echo Abre o site Speedtest.net para testar a velocidade da conexao de internet.
+echo ------------------------------------------------
+echo O que faz: Abre o site Speedtest.net para medir velocidade da conexao.
+echo Tempo estimado: 1 a 2 minutos
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
@@ -432,7 +490,10 @@ goto MENU
 :EXP_21
 cls
 echo [21] Verificar espaco em disco
-echo Mostra a capacidade total, espaco livre e espaco usado da unidade C: em GB.
+echo ------------------------------------------------
+echo O que faz: Mostra capacidade total, livre e usada da unidade C:.
+echo Tempo estimado: Imediato
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
@@ -445,7 +506,6 @@ if "%escolha%"=="1" (
     set /a sizeGB=%size:~0,-9%
     set /a freeGB=%free:~0,-9%
     set /a usedGB=%sizeGB%-%freeGB%
-    echo.
     echo Unidade C:
     echo Capacidade total: %sizeGB% GB
     echo Espaco livre:     %freeGB% GB
@@ -457,7 +517,10 @@ goto MENU
 :EXP_22
 cls
 echo [22] Verificar status do antivirus
-echo Mostra o status do servico do Windows Defender (antivirus nativo do Windows).
+echo ------------------------------------------------
+echo O que faz: Mostra se o Windows Defender esta ativo.
+echo Tempo estimado: Imediato
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
@@ -471,13 +534,16 @@ goto MENU
 :EXP_23
 cls
 echo [23] Testar conectividade com o Google
-echo Roda um ping para google.com para testar se a internet esta funcionando.
+echo ------------------------------------------------
+echo O que faz: Verifica se a internet esta funcionando via ping.
+echo Tempo estimado: Contínuo (pressione Ctrl+C para parar)
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
 set /p escolha="Escolha uma opcao: "
 if "%escolha%"=="1" (
-    ping google.com
+    ping google.com -t
     pause
 )
 goto MENU
@@ -485,13 +551,17 @@ goto MENU
 :EXP_24
 cls
 echo [24] Backup dos logs de eventos
-echo Exporta o log do sistema para um arquivo .evtx para analise posterior.
+echo ------------------------------------------------
+echo O que faz: Exporta logs de eventos do sistema para um arquivo .evtx.
+echo Tempo estimado: 1 minuto
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
 set /p escolha="Escolha uma opcao: "
 if "%escolha%"=="1" (
     wevtutil epl System C:\backup_logs_system.evtx
+    echo Backup concluido!
     pause
 )
 goto MENU
@@ -499,7 +569,10 @@ goto MENU
 :EXP_25
 cls
 echo [25] Visualizar dispositivos USB conectados
-echo Lista os dispositivos USB conectados no momento.
+echo ------------------------------------------------
+echo O que faz: Lista dispositivos USB conectados.
+echo Tempo estimado: Imediato
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
@@ -513,7 +586,10 @@ goto MENU
 :EXP_26
 cls
 echo [26] Ver uso de memoria e CPU
-echo Lista os processos com informacoes detalhadas, incluindo uso de CPU e memoria.
+echo ------------------------------------------------
+echo O que faz: Mostra processos em execucao com uso de memoria e CPU.
+echo Tempo estimado: Imediato
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
@@ -527,7 +603,10 @@ goto MENU
 :EXP_27
 cls
 echo [27] Baixar arquivo via HTTPS (exemplo com PowerShell)
-echo Permite baixar um arquivo da internet via HTTPS usando PowerShell.
+echo ------------------------------------------------
+echo O que faz: Baixa um arquivo da internet usando PowerShell.
+echo Tempo estimado: Varia de acordo com o tamanho do arquivo
+echo Afeta meus arquivos pessoais? Nao
 echo.
 echo [1] Executar
 echo [0] Voltar
