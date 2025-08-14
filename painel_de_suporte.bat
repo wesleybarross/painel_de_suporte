@@ -65,6 +65,7 @@ echo                    CRIADO POR WESLEY BARROS
 echo                   FERRAMENTA PARA USO DO TECNICO
 echo                UTILIZE A FERRAMENTA COMO ADMINISTRADOR
 echo ===================================================================
+echo Versao Beta 1.0 
 echo.
 echo [1]  Limpeza de arquivos temporarios
 echo [2]  Executar limpeza de disco (cleanmgr)
@@ -616,33 +617,186 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+
 :EXP_27
 cls
 echo [27] Baixar arquivo via HTTPS (exemplo com PowerShell)
 echo ------------------------------------------------
-echo O que faz: Baixa um arquivo de um link seguro.
-echo Tempo estimado: Varia
-echo Afeta meus arquivos pessoais? Nao
+echo    O que faz: Baixa um arquivo de um link seguro.
+echo    Tempo estimado: Varia conforme o tamanho e velocidade da internet
+echo    Afeta meus arquivos pessoais? Nao
 echo.
-echo [1] Executar
-echo [0] Voltar
-set /p escolha="Escolha uma opcao: "
-if "%escolha%"=="1" (
-    set /p url="Cole o link HTTPS: "
-    set /p destino="Digite o caminho e nome do arquivo de destino: "
-    powershell -Command "Invoke-WebRequest -Uri '%url%' -OutFile '%destino%'"
-    echo Download concluido!
-    pause
-)
-goto MENU
+echo [1] Executar (Iniciar o processo de download)
+echo [0] Voltar (Sair)
+echo.
+set /p main_choice="Escolha uma opcao: "
 
-:: ==========================
-:: Atualizacao do Script
-:: ==========================
+if "%main_choice%"=="27" goto :start_download
+if "%main_choice%"=="1" goto :start_download
+if "%main_choice%"=="0" goto :eof
+
+echo Opcao invalida. Tente novamente.
+pause
+goto :main_menu
+
+:start_download
+cls
+echo ================================
+echo Baixar arquivo via HTTPS
+echo ================================
+
+set "url="
+set /p url="Cole o link HTTPS: "
+
+if "%url%"=="" (
+    echo Nenhum link fornecido!
+    pause
+    goto :main_menu
+)
+
+set "downloadPath=%USERPROFILE%\Downloads"
+if not exist "%downloadPath%" mkdir "%downloadPath%"
+
+rem Extrai o nome do arquivo da URL. Isso é uma heurística e pode não funcionar para todas as URLs.
+for %%i in ("%url%") do set "filename=%%~nxi"
+
+rem Se o nome do arquivo estiver vazio ou for apenas um ponto, tenta uma alternativa ou define um nome padrão.
+if "%filename%"=="" set "filename=downloaded_file"
+if "%filename%"=="." set "filename=downloaded_file"
+
+set "destino=%downloadPath%\%filename%"
+
+echo Iniciando download de: %url%
+echo Salvando em: %destino%
+
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+"try { ^
+    $url = \"%url%\" ; ^
+    $destination = \"%destino%\" ; ^
+    $userAgent = \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36\" ; ^
+    Invoke-WebRequest -Uri $url -OutFile $destination -UseBasicParsing -UserAgent $userAgent ; ^
+    Write-Host \"Download concluido! Arquivo salvo em: \"$destination\"\" ; ^
+} catch { ^
+    Write-Host \"Erro: O download falhou. Verifique o link ou a conexao.\" ; ^
+    Write-Host $_.Exception.Message ; ^
+} ; Read-Host \"Pressione Enter para continuar...\""
+
+:post_download_menu
+cls
+echo ================================
+echo Download Concluido!
+echo ================================
+echo 1. Executar o arquivo baixado
+echo 2. Baixar outro arquivo
+echo 3. Voltar ao Menu Principal
+echo 4. Sair
+set /p choice="Escolha uma opcao: "
+
+if "%choice%"=="1" (
+    if exist "%destino%" (
+        start "" "%destino%"
+        echo Executando %filename%...
+        pause
+    ) else (
+        echo Arquivo nao encontrado para execucao.
+        pause
+    )
+    goto :post_download_menu
+) else if "%choice%"=="2" (
+    goto :start_download
+) else if "%choice%"=="3" (
+    goto :main_menu
+) else if "%choice%"=="4" (
+    goto :eof
+) else (
+    echo Opcao invalida. Tente novamente.
+    pause
+    goto :post_download_menu
+)
+
+
+
 
 :ATUALIZAR
+@echo off
 cls
-echo Atualizacao do script - EM BREVE
-echo Versao Beta 1.0 - Pronto para uso
+mode con: cols=80 lines=25
+color 0A
+
+:: Caminho do ZIP temporário
+set "ZIP_PATH=%TEMP%\painel_atualizado.zip"
+
+:: Tela inicial
+call :title
+echo.
+echo                   Baixando a ultima versao do GitHub...
+echo.
+
+:: Barra de progresso simulada
+call :progress "Baixando" 30
+
+:: Download do GitHub
+powershell -Command "try { Invoke-WebRequest -Uri 'https://github.com/wesleybarross/painel_de_suporte/archive/refs/heads/main.zip' -OutFile '%ZIP_PATH%' -ErrorAction Stop } catch { exit 1 }"
+
+:: Verifica erro de download
+if %errorlevel% neq 0 (
+    color 0C
+    call :title
+    echo.
+    echo                    ERRO: Falha ao baixar a ultima versao!
+    echo      Verifique sua conexao com a internet ou se o link esta correto.
+    echo.
+    pause
+    goto MENU
+)
+
+call :title
+echo.
+echo Download concluido em:
+echo %ZIP_PATH%
+echo.
+echo                   Extraindo arquivos...
+call :progress "Extraindo" 25
+
+powershell -Command "Expand-Archive -Force -Path '%ZIP_PATH%' -DestinationPath '.'"
+
+call :title
+echo.
+echo                   Substituindo arquivos antigos...
+call :progress "Substituindo" 20
+
+timeout /t 1 >nul
+
+call :title
+echo.
+echo  ================================================================================
+echo                         Script atualizado com sucesso!
+echo  ================================================================================
+echo.
 pause
 goto MENU
+
+:: ---------- Funcoes ----------
+:progress
+setlocal enabledelayedexpansion
+set "text=%~1"
+set /a "steps=%~2"
+set "bar="
+for /l %%a in (1,1,%steps%) do (
+    set "bar=!bar!#"
+    <nul set /p="!text!: [!bar!] %%a/%steps%" >nul
+    timeout /t 1 >nul
+    cls
+    call :title
+    echo.
+)
+endlocal
+exit /b
+
+:title
+cls
+echo.
+echo  ================================================================================
+echo                                   Atualizacao do Script
+echo  ================================================================================
+exit /b
