@@ -3,14 +3,13 @@
 title Painel de Suporte Técnico
 mode con: cols=95 lines=40
 
-:: Verifica se o script está rodando como administrador
-net session >nul 2>&1
-if errorlevel 1 (
-    echo Este script precisa ser executado como ADMINISTRADOR!
-    echo Clique com o botao direito no arquivo e escolha "Executar como administrador".
-    pause
-    exit /b
-)
+
+
+
+
+
+
+
 
 :COR
 cls
@@ -721,82 +720,70 @@ if "%choice%"=="1" (
 @echo off
 cls
 mode con: cols=80 lines=25
-color 0A
 
 :: Caminho do ZIP temporário
 set "ZIP_PATH=%TEMP%\painel_atualizado.zip"
 
-:: Tela inicial
-call :title
+:: Função para centralizar título
+call :TITLE "Atualizacao do Script"
+
 echo.
-echo                   Baixando a ultima versao do GitHub...
+echo                         Baixando a ultima versao do GitHub...
 echo.
 
-:: Barra de progresso simulada
-call :progress "Baixando" 30
+:: Download síncrono com barra animada (cor branca)
+powershell -NoProfile -Command ^
+"$url='https://github.com/wesleybarross/painel_de_suporte/archive/refs/heads/main.zip';" ^
+"$out='%ZIP_PATH%';" ^
+"$wc=New-Object System.Net.WebClient;" ^
+"$wc.DownloadProgressChanged += { " ^
+"    $p=$_; " ^
+"    $barCount=[math]::Floor($_.ProgressPercentage/4); " ^
+"    $bars = '#' * $barCount; " ^
+"    $spaces=' ' * (25 - $barCount); " ^
+"    Write-Host -NoNewline -ForegroundColor White ('`r                                [{0}{1}] {2}%%' -f $bars,$spaces,$_.ProgressPercentage); " ^
+"    Start-Sleep -Milliseconds 150 " ^
+"};" ^
+"$wc.DownloadFile($url,$out)"
 
-:: Download do GitHub
-powershell -Command "try { Invoke-WebRequest -Uri 'https://github.com/wesleybarross/painel_de_suporte/archive/refs/heads/main.zip' -OutFile '%ZIP_PATH%' -ErrorAction Stop } catch { exit 1 }"
-
-:: Verifica erro de download
-if %errorlevel% neq 0 (
-    color 0C
-    call :title
+:: Verifica se o arquivo foi baixado
+if not exist "%ZIP_PATH%" (
+    call :TITLE "Atualizacao do Script"
     echo.
-    echo                    ERRO: Falha ao baixar a ultima versao!
+    echo                   ERRO: Falha ao baixar a ultima versao!
     echo      Verifique sua conexao com a internet ou se o link esta correto.
     echo.
     pause
     goto MENU
 )
 
-call :title
 echo.
-echo Download concluido em:
-echo %ZIP_PATH%
+call :TITLE "Atualizacao do Script"
 echo.
-echo                   Extraindo arquivos...
-call :progress "Extraindo" 25
+echo                         Extraindo arquivos...
+powershell -NoProfile -Command "Expand-Archive -Force -Path '%ZIP_PATH%' -DestinationPath '.'"
 
-powershell -Command "Expand-Archive -Force -Path '%ZIP_PATH%' -DestinationPath '.'"
-
-call :title
+call :TITLE "Atualizacao do Script"
 echo.
-echo                   Substituindo arquivos antigos...
-call :progress "Substituindo" 20
-
+echo                         Substituindo arquivos antigos...
 timeout /t 1 >nul
 
-call :title
+call :TITLE "Atualizacao do Script"
 echo.
 echo  ================================================================================
-echo                         Script atualizado com sucesso!
+echo                       Script atualizado com sucesso!  
 echo  ================================================================================
 echo.
+echo                       Pressione qualquer tecla para continuar...
 pause
+
 goto MENU
 
-:: ---------- Funcoes ----------
-:progress
-setlocal enabledelayedexpansion
-set "text=%~1"
-set /a "steps=%~2"
-set "bar="
-for /l %%a in (1,1,%steps%) do (
-    set "bar=!bar!#"
-    <nul set /p="!text!: [!bar!] %%a/%steps%" >nul
-    timeout /t 1 >nul
-    cls
-    call :title
-    echo.
-)
-endlocal
-exit /b
-
-:title
+:: ---------- Função para centralizar título ----------
+:TITLE
 cls
 echo.
 echo  ================================================================================
-echo                                   Atualizacao do Script
+echo                           %~1
 echo  ================================================================================
 exit /b
