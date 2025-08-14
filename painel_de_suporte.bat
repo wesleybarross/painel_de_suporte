@@ -736,20 +736,10 @@ echo.
 if exist "%ZIP_PATH%" del /f /q "%ZIP_PATH%"
 if exist "%EXTRACT_PATH%" rd /s /q "%EXTRACT_PATH%"
 
-:: Download do ZIP via PowerShell com barra de progresso
+:: Download usando PowerShell com TLS 1.2
 powershell -NoProfile -Command ^
-"$url='https://github.com/wesleybarross/painel_de_suporte/archive/refs/heads/main.zip';" ^
-"$out='%ZIP_PATH%';" ^
-"$wc=New-Object System.Net.WebClient;" ^
-"$wc.DownloadProgressChanged += { " ^
-"    $p=$_; " ^
-"    $barCount=[math]::Floor($_.ProgressPercentage/4); " ^
-"    $bars = '#' * $barCount; " ^
-"    $spaces=' ' * (25 - $barCount); " ^
-"    Write-Host -NoNewline -ForegroundColor White ('`r                                [{0}{1}] {2}%%' -f $bars,$spaces,$_.ProgressPercentage); " ^
-"    Start-Sleep -Milliseconds 150 " ^
-"};" ^
-"$wc.DownloadFile($url,$out)"
+"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; " ^
+"Invoke-WebRequest -Uri 'https://github.com/wesleybarross/painel_de_suporte/archive/refs/heads/main.zip' -OutFile '%ZIP_PATH%' -UseBasicParsing"
 
 :: Verifica se o arquivo foi baixado
 if not exist "%ZIP_PATH%" (
