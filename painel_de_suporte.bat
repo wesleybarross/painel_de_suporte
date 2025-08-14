@@ -6,16 +6,7 @@
 title Painel de Suporte Tecnico
 mode con: cols=95 lines=40
 
-:: =====================================
-:: VERIFICACAO DE ADMINISTRADOR
-:: =====================================
-net session >nul 2>&1
-if errorlevel 1 (
-    echo Este script precisa ser executado como ADMINISTRADOR!
-    echo Clique com o botao direito no arquivo e escolha "Executar como administrador".
-    pause
-    exit /b
-)
+adm
 
 :: =====================================
 :: PROTECAO POR SENHA
@@ -409,46 +400,54 @@ goto MENU
 cls
 echo [21] Verificar espaco em disco
 echo ------------------------------------------------
-echo O que faz: Mostra espaco livre e ocupado nos discos.
+echo O que faz: Mostra o espaço livre em cada unidade do sistema.
 echo Tempo estimado: Instantaneo
 echo Afeta meus arquivos pessoais? Nao
 echo.
 set /p escolha="Deseja executar? (1=Sim / 0=Voltar): "
-if "%escolha%"=="1" wmic logicaldisk get name,size,freespace
-pause
+if "%escolha%"=="1" (
+    echo Verificando espaco em disco...
+    wmic logicaldisk get name,size,freespace
+    echo.
+    pause
+)
 goto MENU
 
 :EXP_22
 cls
-echo [22] Verificar status do antivirus
+echo [22] Verificar status de todos os antivírus
 echo ------------------------------------------------
-echo O que faz: Mostra se o Windows Defender esta ativo.
+echo O que faz: Mostra todos os antivírus instalados e seu status.
 echo Tempo estimado: Instantaneo
 echo Afeta meus arquivos pessoais? Nao
 echo.
 set /p escolha="Deseja executar? (1=Sim / 0=Voltar): "
-if "%escolha%"=="1" powershell Get-MpComputerStatus
-pause
+if "%escolha%"=="1" (
+    echo Verificando todos os antivírus instalados...
+    powershell -NoProfile -Command ^
+        "Get-CimInstance -Namespace root\SecurityCenter2 -ClassName AntivirusProduct | ForEach-Object { $_.displayName + ' - Estado: ' + $_.productState }"
+    echo.
+    echo ===== FIM DA VERIFICACAO =====
+    pause
+)
 goto MENU
 
 :EXP_23
 cls
 echo [23] Testar conectividade com o Google
 echo ------------------------------------------------
-echo O que faz: Verifica se a rede esta conectada. Teste continuo.
+echo O que faz: Verifica se a rede esta conectada. Teste contínuo.
 echo Tempo estimado: Contínuo (pressione Ctrl+C para parar)
 echo Afeta meus arquivos pessoais? Nao
 echo.
 set /p escolha="Deseja executar? (1=Sim / 0=Voltar): "
 if "%escolha%"=="1" (
     echo Iniciando ping continuo. Para parar pressione Ctrl+C.
-    echo.
     ping www.google.com -t
     echo.
     pause
 )
 goto MENU
-
 
 
 :EXP_24
