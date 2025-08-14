@@ -13,10 +13,13 @@ Tudo num só script, fácil de usar, direto ao ponto e com várias ferramentas e
 - 🔍 Verificação e reparo do sistema com SFC e DISM  
 - 🔄 Reset total do Windows Update e configurações de rede  
 - 🛡️ Controle e status do Windows Defender  
+- 🛡️ **Verificação de todos os antivírus instalados**, mostrando nome e estado de cada um  
 - 📊 Informações detalhadas do sistema, processos e dispositivos  
 - 🌐 Testes de conectividade e velocidade da internet  
+- 🌐 **Ping contínuo com aviso para parar com Ctrl+C**  
 - 💾 Backup e visualização de logs do sistema  
 - 🔌 Visualização dos dispositivos USB conectados  
+- ⬆️ **Atualização automática do script via GitHub**, mostrando data, hora e arquivos baixados  
 - … e muito mais para agilizar seu dia a dia!
 
 ---
@@ -31,16 +34,11 @@ Tudo num só script, fácil de usar, direto ao ponto e com várias ferramentas e
 
 ---
 
-## 📄 Licença
-
-MIT License — Use, modifique e compartilhe à vontade!
-
----
 
 ## 👨‍💻 Sobre o autor
 
 **Wesley Barros**  
-[LinkedIn](https://www.linkedin.com/in/wesley-barros) | [GitHub](https://github.com//wesleybarross)
+[LinkedIn](https://www.linkedin.com/in/wesley-barros) | [GitHub](https://github.com/wesleybarross)
 
 ---
 
