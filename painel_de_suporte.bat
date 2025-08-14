@@ -433,15 +433,23 @@ goto MENU
 
 :EXP_23
 cls
-echo [23] Testar conectividade com o google
+echo [23] Testar conectividade com o Google
 echo ------------------------------------------------
-echo O que faz: Verifica se a rede esta conectada.
-echo Tempo estimado: Instantaneo
+echo O que faz: Verifica se a rede esta conectada. Teste continuo.
+echo Tempo estimado: Contínuo (pressione Ctrl+C para parar)
 echo Afeta meus arquivos pessoais? Nao
 echo.
 set /p escolha="Deseja executar? (1=Sim / 0=Voltar): "
-if "%escolha%"=="1" ping www.google.com -n 4 & pause
+if "%escolha%"=="1" (
+    echo Iniciando ping continuo. Para parar pressione Ctrl+C.
+    echo.
+    ping www.google.com -t
+    echo.
+    pause
+)
 goto MENU
+
+
 
 :EXP_24
 cls
@@ -525,16 +533,45 @@ goto MENU
 
 
 :: =====================================
-:: ATUALIZACAO
+:: ATUALIZACAO AUTOMATICA DO PAINEL
 :: =====================================
 :ATUALIZAR
 cls
 echo Baixando ultima versao do GitHub...
 set "ZIP_PATH=%TEMP%\painel_atualizado.zip"
-powershell -Command ^
-"Invoke-WebRequest -Uri 'https://github.com/wesleybarross/painel_de_suporte/archive/refs/heads/main.zip' -OutFile '%ZIP_PATH%'"
+set "TEMP_DIR=%TEMP%\painel_atualizado"
+
+:: Baixa o ZIP
+powershell -Command "Invoke-WebRequest -Uri 'https://github.com/wesleybarross/painel_de_suporte/archive/refs/heads/main.zip' -OutFile '%ZIP_PATH%'"
+
 echo Extraindo arquivos...
-powershell -Command "Expand-Archive -Force -Path '%ZIP_PATH%' -DestinationPath '.'"
-echo Script atualizado com sucesso!
+:: Remove pasta temporaria antiga se existir
+if exist "%TEMP_DIR%" rd /s /q "%TEMP_DIR%"
+mkdir "%TEMP_DIR%"
+
+:: Extrai o ZIP
+powershell -Command "Expand-Archive -Force -Path '%ZIP_PATH%' -DestinationPath '%TEMP_DIR%'"
+
+:: Copia os arquivos para a pasta atual, sobrescrevendo
+echo Atualizando arquivos do painel...
+xcopy "%TEMP_DIR%\painel_de_suporte-main\*" "%~dp0" /s /e /y
+
+:: Mostra a data e hora
+echo.
+echo Atualizacao concluida em:
+echo ------------------------
+echo %date% %time%
+echo.
+
+:: Lista os arquivos atualizados
+echo Conteudo do painel atualizado:
+echo -----------------------------
+dir /b "%~dp0"
+echo.
+
+:: Limpa arquivos temporarios
+rd /s /q "%TEMP_DIR%"
+del /q "%ZIP_PATH%"
+
 pause
 goto MENU
