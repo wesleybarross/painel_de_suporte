@@ -807,11 +807,22 @@ echo.
 echo [1] Executar
 echo [0] Voltar
 set /p escolha="Escolha uma opcao: "
+
 if "%escolha%"=="1" (
-    wmic path CIM_LogicalDevice where "Description like 'USB%'" get /value
+    echo Dispositivos USB conectados:
+    echo -------------------------------------------------------
+    
+    :: Usando Win32_USBHub para listar dispositivos USB confiavelmente
+    for /f "skip=1 tokens=*" %%A in ('wmic path Win32_USBHub get Name 2^>nul') do (
+        if not "%%A"=="" echo - %%A
+    )
+
+    echo.
     pause
 )
+
 goto MENU
+
 
 :: ----------------------------------------------------------------------------
 :: OPÇÃO 26: Ver uso de memória e CPU
