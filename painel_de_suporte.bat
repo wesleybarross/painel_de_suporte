@@ -46,8 +46,40 @@ if "%SENHA%"=="%SENHA_CORRETA%" (
 
 
 
+@echo off
+:: ============================================================================
+:: Painel de Suporte Técnico - Melhorado com explicações amigáveis
+::
+:: Este script Batch (.bat) foi desenvolvido para auxiliar técnicos de suporte
+:: na execução de tarefas comuns de manutenção e diagnóstico em sistemas Windows.
+:: Ele oferece um menu interativo com diversas opções, desde limpeza de arquivos
+:: temporários até verificação de integridade do sistema e gerenciamento de rede.
+::
+:: Autor Original: WESLEY BARROS
+:: Versão: Beta 1.0 - 2025
+::
+:: Requisitos:
+:: - Executar como Administrador para que todas as funções operem corretamente.
+:: - Conexão com a internet para funções que dependem de download ou acesso a URLs.
+::
+:: Estrutura do Script:
+:: - Configurações Iniciais: Define o título da janela e o tamanho.
+:: - Rotina de Seleção de Cor: Permite ao usuário personalizar as cores do console.
+:: - Menu Principal: Apresenta as opções disponíveis para o técnico.
+:: - Rotinas de Execução: Cada opção do menu principal direciona para uma rotina
+::   específica que executa a tarefa correspondente, com explicações detalhadas.
+:: - Rotina de Atualização: Permite baixar a versão mais recente do script via GitHub.
+::
+:: ============================================================================
 
+title Painel de Suporte Técnico
+mode con: cols=95 lines=40
 
+:: ============================================================================
+:: ROTINA DE SELEÇÃO DE COR DO PAINEL
+:: Esta seção permite ao usuário escolher as cores de fundo e texto do console.
+:: As cores são definidas por um código hexadecimal (ex: 07 para fundo preto e texto branco).
+:: ============================================================================
 :COR
 cls
 echo ================================================================
@@ -67,8 +99,10 @@ echo.
 set /p cor="Digite o codigo da cor (ou pressione ENTER para usar padrao): "
 
 if "%cor%"=="" (
+    :: Se o usuário não digitar nada, define a cor padrão (preto e branco).
     color 07
 ) else (
+    :: Validação da entrada de cor para garantir que é um código válido.
     setlocal enabledelayedexpansion
     set "valid=0123456789ABCDEFabcdef"
     set "input=%cor%"
@@ -94,6 +128,10 @@ if "%cor%"=="" (
 
 goto MENU
 
+:: ============================================================================
+:: MENU PRINCIPAL
+:: Esta seção exibe todas as opções disponíveis para o técnico e gerencia a navegação.
+:: ============================================================================
 :MENU
 cls
 echo ===================================================================
@@ -101,7 +139,7 @@ echo                    CRIADO POR WESLEY BARROS
 echo                   FERRAMENTA PARA USO DO TECNICO
 echo                UTILIZE A FERRAMENTA COMO ADMINISTRADOR
 echo ===================================================================
-echo Versao Beta 1.0 
+echo Versao Beta 1.0 - 2025
 echo.
 echo [1]  Limpeza de arquivos temporarios
 echo [2]  Executar limpeza de disco (cleanmgr)
@@ -137,7 +175,7 @@ echo.
 
 set /p opcao="Escolha uma opcao: "
 
-:: Valida se entrada é numérica ou U
+:: Valida se a entrada do usuário é numérica ou 'U' (para atualização).
 setlocal enabledelayedexpansion
 set "valor=%opcao%"
 for /f "delims=0123456789Uu" %%a in ("!valor!") do (
@@ -148,6 +186,7 @@ for /f "delims=0123456789Uu" %%a in ("!valor!") do (
 )
 endlocal
 
+:: Direciona para a rotina correspondente à opção escolhida.
 if /I "%opcao%"=="U" goto ATUALIZAR
 if "%opcao%"=="99" goto COR
 if "%opcao%"=="0" exit
@@ -161,10 +200,20 @@ echo Opcao invalida! Digite um numero valido.
 pause
 goto MENU
 
-:: ==========================
-:: Opcoes 1 a 27
-:: ==========================
+:: ============================================================================
+:: ROTINAS DE EXECUÇÃO DAS OPÇÕES DO MENU
+:: Cada seção abaixo corresponde a uma opção do menu principal e contém:
+:: - Título da opção.
+:: - Descrição do que a função faz.
+:: - Tempo estimado de execução.
+:: - Informação se afeta arquivos pessoais.
+:: - Opções para executar a tarefa ou voltar ao menu.
+:: ============================================================================
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 1: Limpeza de arquivos temporários
+:: Remove arquivos temporários do sistema para liberar espaço em disco.
+:: ----------------------------------------------------------------------------
 :EXP_1
 cls
 echo [1] Limpeza de arquivos temporarios
@@ -183,6 +232,11 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 2: Limpeza de disco (cleanmgr)
+:: Abre a ferramenta nativa do Windows para limpeza de disco, permitindo remover
+:: arquivos desnecessários e liberar espaço de forma segura.
+:: ----------------------------------------------------------------------------
 :EXP_2
 cls
 echo [2] Limpeza de disco (cleanmgr)
@@ -200,6 +254,11 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 3: Verificação de arquivos do sistema (SFC)
+:: Executa o System File Checker (SFC) para verificar e reparar arquivos de sistema
+:: corrompidos ou modificados, restaurando a integridade do Windows.
+:: ----------------------------------------------------------------------------
 :EXP_3
 cls
 echo [3] Verificacao de arquivos do sistema (SFC)
@@ -220,6 +279,11 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 4: Reparo da imagem do Windows (DISM)
+:: Utiliza a ferramenta Deployment Image Servicing and Management (DISM) para
+:: reparar a imagem do Windows, corrigindo problemas mais profundos que o SFC.
+:: ----------------------------------------------------------------------------
 :EXP_4
 cls
 echo [4] Reparo da imagem do Windows (DISM)
@@ -237,6 +301,11 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 5: Reset do Windows Update
+:: Interrompe os serviços do Windows Update e BITS, limpa o cache de atualização
+:: e reinicia os serviços, útil para resolver problemas de atualização.
+:: ----------------------------------------------------------------------------
 :EXP_5
 cls
 echo [5] Reset do Windows Update
@@ -258,6 +327,11 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 6: Reset de configurações de rede
+:: Redefine as configurações de rede (Winsock, IP e DNS) para solucionar
+:: problemas de conectividade e acesso à internet.
+:: ----------------------------------------------------------------------------
 :EXP_6
 cls
 echo [6] Reset de configuracoes de rede
@@ -277,6 +351,11 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 7: Atualização das políticas de grupo (GPO)
+:: Força a atualização das políticas de grupo do Windows, garantindo que as
+:: configurações de segurança e sistema mais recentes sejam aplicadas.
+:: ----------------------------------------------------------------------------
 :EXP_7
 cls
 echo [7] Atualizacao das politicas de grupo (GPO)
@@ -294,6 +373,11 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 8: Limpeza de logs de eventos
+:: Apaga registros antigos de eventos do Windows (aplicativo e sistema),
+:: o que pode ajudar a liberar espaço e melhorar o desempenho.
+:: ----------------------------------------------------------------------------
 :EXP_8
 cls
 echo [8] Limpeza de logs de eventos
@@ -313,6 +397,13 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 9: Informações do sistema (msinfo32)
+:: Abre o utilitário 
+
+
+do Windows que exibe informações detalhadas sobre o hardware e software do computador.
+:: ----------------------------------------------------------------------------
 :EXP_9
 cls
 echo [9] Informacoes do sistema (msinfo32)
@@ -330,6 +421,11 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 10: Gerenciador de dispositivos
+:: Abre o Gerenciador de Dispositivos, onde é possível gerenciar drivers,
+:: hardware e identificar problemas em dispositivos conectados.
+:: ----------------------------------------------------------------------------
 :EXP_10
 cls
 echo [10] Gerenciador de dispositivos
@@ -347,6 +443,11 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 11: Ver adaptadores de rede
+:: Exibe informações detalhadas sobre todos os adaptadores de rede instalados,
+:: incluindo configurações de IP, DNS, e status da conexão.
+:: ----------------------------------------------------------------------------
 :EXP_11
 cls
 echo [11] Ver adaptadores de rede
@@ -376,6 +477,11 @@ if "%escolha%"=="2" (
 if "%escolha%"=="0" goto MENU
 goto EXP_11
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 12: Ver e atualizar programas instalados via winget
+:: Utiliza o gerenciador de pacotes Winget para listar programas com atualizações
+:: disponíveis e permite a atualização de todos eles de uma vez.
+:: ----------------------------------------------------------------------------
 :EXP_12
 cls
 echo [12] Ver e atualizar programas instalados via winget
@@ -401,6 +507,11 @@ if "%escolha%"=="2" (
 if "%escolha%"=="0" goto MENU
 goto EXP_12
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 13: Ver processos em execução
+:: Lista todos os processos e aplicativos que estão sendo executados no momento
+:: no sistema, útil para identificar programas que consomem muitos recursos.
+:: ----------------------------------------------------------------------------
 :EXP_13
 cls
 echo [13] Ver processos em execucao
@@ -418,6 +529,11 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 14: Ver status dos principais serviços
+:: Exibe uma lista dos serviços do Windows que estão em execução, permitindo
+:: verificar o status de componentes importantes do sistema.
+:: ----------------------------------------------------------------------------
 :EXP_14
 cls
 echo [14] Ver status dos principais servicos
@@ -435,6 +551,11 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 15: Executar CHKDSK no disco C:
+:: Inicia a ferramenta Check Disk (CHKDSK) para verificar e corrigir erros
+:: no sistema de arquivos e setores defeituosos no disco C:.
+:: ----------------------------------------------------------------------------
 :EXP_15
 cls
 echo [15] Executar CHKDSK no disco C:
@@ -452,6 +573,11 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 16: Abrir PowerShell
+:: Abre uma nova janela do PowerShell, um ambiente de linha de comando mais
+:: avançado para execução de scripts e comandos administrativos.
+:: ----------------------------------------------------------------------------
 :EXP_16
 cls
 echo [16] Abrir PowerShell
@@ -469,6 +595,11 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 17: Verificar ipconfig
+:: Exibe as configurações de rede IP do computador, incluindo endereço IP,
+:: máscara de sub-rede, gateway padrão e servidores DNS.
+:: ----------------------------------------------------------------------------
 :EXP_17
 cls
 echo [17] Verificar ipconfig
@@ -486,6 +617,13 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 18: Instalar impressora / Abrir link de driver
+:: Abre o painel de 
+
+
+impressoras do Windows, permitindo adicionar novas impressoras ou gerenciar as existentes.
+:: ----------------------------------------------------------------------------
 :EXP_18
 cls
 echo [18] Instalar impressora / Abrir link de driver
@@ -503,6 +641,11 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 19: Abertura de chamado
+:: Abre o sistema de chamados da empresa no navegador padrão, facilitando
+:: o registro de novas solicitações de suporte.
+:: ----------------------------------------------------------------------------
 :EXP_19
 cls
 echo [19] Abertura de chamado
@@ -520,6 +663,11 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 20: Testar velocidade da internet
+:: Abre um site de teste de velocidade da internet no navegador padrão,
+:: permitindo verificar a qualidade da conexão.
+:: ----------------------------------------------------------------------------
 :EXP_20
 cls
 echo [20] Testar velocidade da internet
@@ -537,6 +685,11 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 21: Verificar espaço em disco
+:: Exibe o espaço livre e ocupado em todas as unidades de disco lógicas
+:: do sistema, útil para monitorar o armazenamento.
+:: ----------------------------------------------------------------------------
 :EXP_21
 cls
 echo [21] Verificar espaco em disco
@@ -554,6 +707,11 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 22: Verificar status do antivírus
+:: Utiliza PowerShell para verificar o status do Windows Defender e outros
+:: antivírus compatíveis com WMI, mostrando se estão ativos.
+:: ----------------------------------------------------------------------------
 :EXP_22
 cls
 echo [22] Verificar status do antivirus
@@ -571,6 +729,11 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 23: Testar conectividade com o Google
+:: Realiza um teste de ping contínuo para o Google, verificando a conectividade
+:: com a internet. Pode ser interrompido com Ctrl+C.
+:: ----------------------------------------------------------------------------
 :EXP_23
 cls
 echo [23] Testar conectividade com o Google
@@ -593,12 +756,21 @@ if "%escolha%"=="1" (
 if "%escolha%"=="0" goto MENU
 goto EXP_23
 
+:: ----------------------------------------------------------------------------
+:: ROTINA DE PING CONTÍNUO
+:: Sub-rotina para executar o ping contínuo. Permite tratamento de Ctrl+C.
+:: ----------------------------------------------------------------------------
 :PING_LOOP
 REM Ativar tratamento de CTRL+C
 break off
 ping google.com -t
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 24: Backup dos logs de eventos
+:: Copia os logs de eventos importantes do Windows para uma pasta de backup
+:: na área de trabalho do usuário, útil para análise posterior.
+:: ----------------------------------------------------------------------------
 :EXP_24
 cls
 echo [24] Backup dos logs de eventos
@@ -619,6 +791,11 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 25: Visualizar dispositivos USB conectados
+:: Lista todos os dispositivos USB que estão atualmente conectados ao computador,
+:: incluindo detalhes como tipo e status.
+:: ----------------------------------------------------------------------------
 :EXP_25
 cls
 echo [25] Visualizar dispositivos USB conectados
@@ -636,6 +813,11 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 26: Ver uso de memória e CPU
+:: Exibe o uso atual da memória RAM e da CPU, juntamente com a lista de processos,
+:: ajudando a identificar gargalos de desempenho.
+:: ----------------------------------------------------------------------------
 :EXP_26
 cls
 echo [26] Ver uso de memoria e CPU
@@ -653,7 +835,11 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
-
+:: ----------------------------------------------------------------------------
+:: OPÇÃO 27: Baixar arquivo via HTTPS (exemplo com PowerShell)
+:: Permite baixar um arquivo de um link HTTPS seguro usando PowerShell.
+:: Inclui opções para executar o arquivo após o download.
+:: ----------------------------------------------------------------------------
 :EXP_27
 cls
 echo [27] Baixar arquivo via HTTPS (exemplo com PowerShell)
@@ -751,8 +937,11 @@ if "%choice%"=="1" (
 )
 
 
-
-
+:: ============================================================================
+:: ROTINA DE ATUALIZAÇÃO DO SCRIPT
+:: Permite baixar a versão mais recente do script diretamente do GitHub.
+:: Garante que o técnico esteja sempre utilizando a versão mais atualizada.
+:: ============================================================================
 :ATUALIZAR
 @echo off
 cls
@@ -761,20 +950,20 @@ mode con: cols=80 lines=25
 :: Define cor branca para fonte
 color 07
 
-:: Caminho do ZIP temporário
+:: Caminho do ZIP temporário para o download da atualização.
 set "ZIP_PATH=%TEMP%\painel_atualizado.zip"
 
-:: Tela inicial
+:: Tela inicial da atualização.
 call :title
 echo.
 echo                   Baixando a ultima versao do GitHub...
 echo.
 
-:: Download com PowerShell
+:: Download do arquivo ZIP da última versão do repositório GitHub via PowerShell.
 powershell -Command ^
 "try { $url = 'https://github.com/wesleybarross/painel_de_suporte/archive/refs/heads/main.zip'; $output = '%ZIP_PATH%'; $wc = New-Object System.Net.WebClient; $wc.DownloadFile($url, $output) } catch { exit 1 }"
 
-:: Verifica erro de download
+:: Verifica se houve erro no download.
 if %errorlevel% neq 0 (
     call :title
     echo.
@@ -792,6 +981,7 @@ echo %ZIP_PATH%
 echo.
 echo                   Extraindo arquivos...
 
+:: Extrai o conteúdo do arquivo ZIP baixado para o diretório atual, sobrescrevendo arquivos existentes.
 powershell -Command "Expand-Archive -Force -Path '%ZIP_PATH%' -DestinationPath '.'"
 
 call :title
@@ -809,7 +999,10 @@ echo.
 pause
 goto MENU
 
-:: ---------- Funcoes ----------
+:: ----------------------------------------------------------------------------
+:: FUNÇÃO AUXILIAR: title
+:: Exibe um cabeçalho padronizado para a rotina de atualização.
+:: ----------------------------------------------------------------------------
 :title
 cls
 echo.
@@ -817,3 +1010,5 @@ echo  ==========================================================================
 echo                                   Atualizacao do Script
 echo  ================================================================================
 exit /b
+
+
