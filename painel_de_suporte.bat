@@ -4,7 +4,7 @@ title Painel de Suporte Técnico
 mode con: cols=95 lines=40
 
 
-testao
+
 
 
 
@@ -723,6 +723,7 @@ mode con: cols=80 lines=25
 
 :: Caminho do ZIP temporário
 set "ZIP_PATH=%TEMP%\painel_atualizado.zip"
+set "EXTRACT_PATH=%TEMP%\painel_atualizado"
 
 :: Função para centralizar título
 call :TITLE "Atualizacao do Script"
@@ -731,7 +732,11 @@ echo.
 echo                         Baixando a ultima versao do GitHub...
 echo.
 
-:: Download síncrono com barra animada (cor branca)
+:: Remove arquivos temporários antigos
+if exist "%ZIP_PATH%" del /f /q "%ZIP_PATH%"
+if exist "%EXTRACT_PATH%" rd /s /q "%EXTRACT_PATH%"
+
+:: Download do ZIP via PowerShell com barra de progresso
 powershell -NoProfile -Command ^
 "$url='https://github.com/wesleybarross/painel_de_suporte/archive/refs/heads/main.zip';" ^
 "$out='%ZIP_PATH%';" ^
@@ -761,12 +766,11 @@ echo.
 call :TITLE "Atualizacao do Script"
 echo.
 echo                         Extraindo arquivos...
-powershell -NoProfile -Command "Expand-Archive -Force -Path '%ZIP_PATH%' -DestinationPath '.'"
+powershell -NoProfile -Command "Expand-Archive -Force -Path '%ZIP_PATH%' -DestinationPath '%EXTRACT_PATH%'"
 
-call :TITLE "Atualizacao do Script"
-echo.
-echo                         Substituindo arquivos antigos...
-timeout /t 1 >nul
+:: Copiar arquivos da subpasta para o diretório do script
+for /d %%D in ("%EXTRACT_PATH%\*") do set "SOURCE_DIR=%%D"
+xcopy "%SOURCE_DIR%\*" "%~dp0" /s /e /y /q >nul
 
 call :TITLE "Atualizacao do Script"
 echo.
@@ -776,6 +780,10 @@ echo  ==========================================================================
 echo.
 echo                       Pressione qualquer tecla para continuar...
 pause
+
+:: Limpa arquivos temporários
+del /f /q "%ZIP_PATH%"
+rd /s /q "%EXTRACT_PATH%"
 
 goto MENU
 
@@ -787,4 +795,3 @@ echo  ==========================================================================
 echo                           %~1
 echo  ================================================================================
 exit /b
-
