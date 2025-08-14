@@ -139,7 +139,7 @@ echo                    CRIADO POR WESLEY BARROS
 echo                   FERRAMENTA PARA USO DO TECNICO
 echo                UTILIZE A FERRAMENTA COMO ADMINISTRADOR
 echo ===================================================================
-echo Versao Beta 1.0 - 2025
+echo Versao Beta 1.0 - 2025 (BASE)
 echo.
 echo [1]  Limpeza de arquivos temporarios
 echo [2]  Executar limpeza de disco (cleanmgr)
@@ -1021,5 +1021,6 @@ echo  ==========================================================================
 echo                                   Atualizacao do Script
 echo  ================================================================================
 exit /b
+
 
 
