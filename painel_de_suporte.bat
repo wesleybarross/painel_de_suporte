@@ -6,7 +6,17 @@
 title Painel de Suporte Tecnico
 mode con: cols=95 lines=40
 
-adm
+:: =====================================
+:: VERIFICACAO DE ADMINISTRADOR
+:: =====================================
+net session >nul 2>&1
+if errorlevel 1 (
+    echo Este script precisa ser executado como ADMINISTRADOR!
+    echo Clique com o botao direito no arquivo e escolha "Executar como administrador".
+    pause
+    exit /b
+)
+
 
 :: =====================================
 :: PROTECAO POR SENHA
