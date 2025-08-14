@@ -1,6 +1,6 @@
 @echo off
-:: Painel de Suporte Técnico - Melhorado com explicações amigáveis
-title Painel de Suporte Técnico
+:: Painel de Suporte Tecnico - Melhorado com explicações amigáveis
+title Painel de Suporte Tecnico
 mode con: cols=95 lines=40
 
 
@@ -12,6 +12,38 @@ if errorlevel 1 (
     pause
     exit /b
 )
+
+
+
+
+@echo off
+:: Painel de Suporte Tecnico - Protegido por senha
+title Painel de Suporte Tecnico
+mode con: cols=95 lines=40
+
+:: =====================================
+:: PROTEÇÃO POR SENHA
+:: =====================================
+set "SENHA_CORRETA=WB2025"
+
+:LOGIN
+cls
+echo =======================================
+echo        PAINEL DE SUPORTE TECNICO
+echo =======================================
+set /p "SENHA=Digite a senha de acesso: "
+
+if "%SENHA%"=="%SENHA_CORRETA%" (
+    echo Acesso permitido...
+    timeout /t 1 >nul
+    goto COR
+) else (
+    echo Senha incorreta! Tente novamente.
+    timeout /t 2 >nul
+    goto LOGIN
+)
+
+
 
 
 
