@@ -736,10 +736,16 @@ echo.
 if exist "%ZIP_PATH%" del /f /q "%ZIP_PATH%"
 if exist "%EXTRACT_PATH%" rd /s /q "%EXTRACT_PATH%"
 
-:: Download usando PowerShell com TLS 1.2
+:: Download com barra de progresso usando PowerShell
 powershell -NoProfile -Command ^
 "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; " ^
-"Invoke-WebRequest -Uri 'https://github.com/wesleybarross/painel_de_suporte/archive/refs/heads/main.zip' -OutFile '%ZIP_PATH%' -UseBasicParsing"
+"$url = 'https://github.com/wesleybarross/painel_de_suporte/archive/refs/heads/main.zip'; " ^
+"$out = '%ZIP_PATH%'; " ^
+"$wc = New-Object System.Net.WebClient; " ^
+"$wc.DownloadProgressChanged += { Write-Host -NoNewline ('`rProgresso: {0,3}%%' -f $_.ProgressPercentage) }; " ^
+"$wc.DownloadFileAsync($url, $out); " ^
+"while ($wc.IsBusy) { Start-Sleep -Milliseconds 200 }; " ^
+"Write-Host ''"
 
 :: Verifica se o arquivo foi baixado
 if not exist "%ZIP_PATH%" (
@@ -747,7 +753,7 @@ if not exist "%ZIP_PATH%" (
     echo.
     echo                   ERRO: Falha ao baixar a ultima versao!
     echo      Verifique sua conexao com a internet ou se o link esta correto.
-    echo.
+    echo. 
     pause
     goto MENU
 )
@@ -759,8 +765,8 @@ echo                         Extraindo arquivos...
 powershell -NoProfile -Command "Expand-Archive -Force -Path '%ZIP_PATH%' -DestinationPath '%EXTRACT_PATH%'"
 
 :: Copiar arquivos da subpasta para o diretório do script
-for /d %%D in ("%EXTRACT_PATH%\*") do set "SOURCE_DIR=%%D"
-xcopy "%SOURCE_DIR%\*" "%~dp0" /s /e /y /q >nul
+set "SOURCE_DIR=%EXTRACT_PATH%\painel_de_suporte-main"
+xcopy "%SOURCE_DIR%\*" "%~dp0" /s /e /y /q
 
 call :TITLE "Atualizacao do Script"
 echo.
