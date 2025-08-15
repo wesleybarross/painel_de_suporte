@@ -17,7 +17,6 @@ if errorlevel 1 (
     exit /b
 )
 
-
 :: =====================================
 :: PROTECAO POR SENHA
 :: =====================================
@@ -103,7 +102,7 @@ echo [22] Verificar status do antivirus
 echo [23] Testar conectividade com o google
 echo [24] Backup dos logs de eventos
 echo [25] Visualizar dispositivos USB conectados
-echo [26] Ver uso de memoria e CPU
+echo [26] Ver uso de memoria e CPU - Simples
 echo [27] Baixar arquivo via HTTPS (exemplo com PowerShell)
 echo [28] Gerar relatorio de politicas de grupo (gpresult)
 echo [U] Atualizar script
@@ -113,23 +112,20 @@ echo.
 
 set /p opcao="Escolha uma opcao: "
 
-:: Valida se a entrada do usuário é numérica ou 'U' (para atualização).
-setlocal enabledelayedexpansion
-set "valor=%opcao%"
-for /f "delims=0123456789Uu" %%a in ("!valor!") do (
-    endlocal
-    echo Opcao invalida! Digite um numero valido.
-    pause
-    goto MENU
-)
-endlocal
-
-:: Direciona para a rotina correspondente à opção escolhida.
+:: =====================================
+:: VALIDACAO DE ENTRADA
+:: =====================================
 if /I "%opcao%"=="U" goto ATUALIZAR
 if "%opcao%"=="99" goto COR
 if "%opcao%"=="0" exit
+for /f "delims=0123456789" %%a in ("%opcao%") do (
+    if /I NOT "%opcao%"=="U" (
+        echo Opcao invalida! Digite um numero valido.
+        pause
+        goto MENU
+    )
+)
 
-:: Corrigido para aceitar a opção 28
 if %opcao% lss 1 if not "%opcao%"=="0" goto INVALIDA
 if %opcao% gtr 28 if not "%opcao%"=="99" goto INVALIDA
 
@@ -139,8 +135,9 @@ goto EXP_%opcao%
 echo Opcao invalida! Digite um numero valido.
 pause
 goto MENU
+
 :: =====================================
-:: ROTINAS COMPLETAS EXP_1 até EXP_27
+:: ROTINAS COMPLETAS EXP_1 até EXP_28
 :: =====================================
 
 :EXP_1
@@ -281,6 +278,7 @@ set /p escolha="Deseja executar? (1=Sim / 0=Voltar): "
 if "%escolha%"=="1" start devmgmt.msc
 goto MENU
 
+
 :EXP_11
 cls
 echo [11] Ver adaptadores de rede
@@ -326,9 +324,7 @@ echo Tempo estimado: Instantaneo
 echo Afeta meus arquivos pessoais? Nao
 echo.
 set /p escolha="Deseja executar? (1=Sim / 0=Voltar): "
-if "%escolha%"=="1" (
-    net start
-)
+if "%escolha%"=="1" net start
 pause
 goto MENU
 
@@ -446,7 +442,7 @@ goto MENU
 cls
 echo [23] Testar conectividade com o Google
 echo ------------------------------------------------
-echo O que faz: Verifica se a rede esta conectada. Teste contínuo.
+echo O que faz: Verifica se a rede esta conectada. Teste continuo.
 echo Tempo estimado: Contínuo (pressione Ctrl+C para parar)
 echo Afeta meus arquivos pessoais? Nao
 echo.
@@ -454,11 +450,8 @@ set /p escolha="Deseja executar? (1=Sim / 0=Voltar): "
 if "%escolha%"=="1" (
     echo Iniciando ping continuo. Para parar pressione Ctrl+C.
     ping www.google.com -t
-    echo.
-    pause
 )
 goto MENU
-
 
 :EXP_24
 cls
@@ -489,17 +482,37 @@ set /p escolha="Deseja executar? (1=Sim / 0=Voltar): "
 if "%escolha%"=="1" wmic path Win32_USBHub get DeviceID,Description & pause
 goto MENU
 
+
 :EXP_26
 cls
-echo [26] Ver uso de memoria e CPU
-echo ------------------------------------------------
-echo O que faz: Mostra uso atual de CPU e memoria.
-echo Tempo estimado: Instantaneo
-echo Afeta meus arquivos pessoais? Nao
+echo [26] Ver uso de memoria e CPU - Simples
+echo ----------------------------------------
 echo.
-set /p escolha="Deseja executar? (1=Sim / 0=Voltar): "
-if "%escolha%"=="1" systeminfo | findstr /C:"Total Physical Memory" & wmic cpu get loadpercentage & pause
+
+:: Memória
+for /f "tokens=2 delims==" %%A in ('wmic OS get TotalVisibleMemorySize /value 2^>nul ^| findstr "="') do set MemTotalKB=%%A
+for /f "tokens=2 delims==" %%A in ('wmic OS get FreePhysicalMemory /value 2^>nul ^| findstr "="') do set MemLivreKB=%%A
+
+set /a MemTotalMB=MemTotalKB/1024
+set /a MemLivreMB=MemLivreKB/1024
+set /a MemUsadaMB=MemTotalMB-MemLivreMB
+set /a MemPercent=(MemUsadaMB*100)/MemTotalMB
+
+:: CPU
+for /f "tokens=1 delims=." %%A in ('powershell -NoProfile -Command "try { [math]::Round((Get-Counter '\Processor(_Total)\% Processor Time').CounterSamples[0].CookedValue) } catch { 0 }"') do set CPU=%%A
+
+:: Exibir resultado
+echo Memoria: %MemUsadaMB% MB / %MemTotalMB% MB  [%MemPercent%%]
+echo CPU: %CPU%%
+
+echo.
+pause
 goto MENU
+
+
+
+
+
 
 :EXP_27
 cls
@@ -513,12 +526,10 @@ for %%i in ("%url%") do set "filename=%%~nxi"
 if "%filename%"=="" set "filename=downloaded_file"
 set "destino=%downloadPath%\%filename%"
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-"Invoke-WebRequest -Uri '%url%' -OutFile '%destino%' -UseBasicParsing"
+"Invoke-WebRequest -Uri '%url%' -OutFile '%destino%'"
 echo Download concluido em %destino%
 pause
 goto MENU
-
-
 
 :EXP_28
 cls
@@ -539,8 +550,6 @@ if "%escolha%"=="1" (
 )
 goto MENU
 
-
-
 :: =====================================
 :: ATUALIZACAO AUTOMATICA DO PAINEL
 :: =====================================
@@ -553,34 +562,29 @@ set "TEMP_DIR=%TEMP%\painel_atualizado"
 :: Baixa o ZIP
 powershell -Command "Invoke-WebRequest -Uri 'https://github.com/wesleybarross/painel_de_suporte/archive/refs/heads/main.zip' -OutFile '%ZIP_PATH%'"
 
-echo Extraindo arquivos...
-:: Remove pasta temporaria antiga se existir
-if exist "%TEMP_DIR%" rd /s /q "%TEMP_DIR%"
-mkdir "%TEMP_DIR%"
+if exist "%ZIP_PATH%" (
+    echo Extraindo arquivos...
+    if exist "%TEMP_DIR%" rd /s /q "%TEMP_DIR%"
+    mkdir "%TEMP_DIR%"
+    powershell -Command "Expand-Archive -Force -Path '%ZIP_PATH%' -DestinationPath '%TEMP_DIR%'"
 
-:: Extrai o ZIP
-powershell -Command "Expand-Archive -Force -Path '%ZIP_PATH%' -DestinationPath '%TEMP_DIR%'"
+    echo Atualizando arquivos do painel...
+    xcopy "%TEMP_DIR%\painel_de_suporte-main\*" "%~dp0" /s /e /y
 
-:: Copia os arquivos para a pasta atual, sobrescrevendo
-echo Atualizando arquivos do painel...
-xcopy "%TEMP_DIR%\painel_de_suporte-main\*" "%~dp0" /s /e /y
+    echo.
+    echo Atualizacao concluida em:
+    echo ------------------------
+    echo %date% %time%
+    echo.
+    echo Conteudo do painel atualizado:
+    echo -----------------------------
+    dir /b "%~dp0"
+    echo.
 
-:: Mostra a data e hora
-echo.
-echo Atualizacao concluida em:
-echo ------------------------
-echo %date% %time%
-echo.
-
-:: Lista os arquivos atualizados
-echo Conteudo do painel atualizado:
-echo -----------------------------
-dir /b "%~dp0"
-echo.
-
-:: Limpa arquivos temporarios
-rd /s /q "%TEMP_DIR%"
-del /q "%ZIP_PATH%"
-
+    rd /s /q "%TEMP_DIR%"
+    del /q "%ZIP_PATH%"
+) else (
+    echo Erro ao baixar o arquivo. Verifique sua conexao.
+)
 pause
 goto MENU
